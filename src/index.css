@@ -386,3 +386,83 @@ body.admin-emergency-exit .admin-loading-overlay {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+/* Security Enhancement Styles */
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.security-badge.verified {
+  background: linear-gradient(135deg, #10B981, #34D399);
+  color: white;
+}
+
+.security-badge.expired {
+  background: linear-gradient(135deg, #EF4444, #F87171);
+  color: white;
+}
+
+.security-badge.pending {
+  background: linear-gradient(135deg, #F59E0B, #FBBF24);
+  color: white;
+}
+
+/* Authentication State Indicators */
+.auth-status-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10003;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.auth-status-indicator.authenticated {
+  border-left: 3px solid #10B981;
+}
+
+.auth-status-indicator.unauthenticated {
+  border-left: 3px solid #EF4444;
+}
+
+/* Security Loading Animation */
+.security-scan-animation {
+  position: relative;
+  overflow: hidden;
+}
+
+.security-scan-animation::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(16, 185, 129, 0.2), 
+    transparent
+  );
+  animation: securityScan 2s infinite;
+}
+
+@keyframes securityScan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}

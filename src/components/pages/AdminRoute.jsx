@@ -9,32 +9,73 @@ const AdminRoute = () => {
   const [user, setUser] = useState(null);
   const { showToast } = useToast();
 
-  useEffect(() => {
+useEffect(() => {
     // Add admin body class for CSS overrides
     document.body.classList.add('admin-route');
     
     const checkAdminAccess = () => {
       try {
         const userData = localStorage.getItem('user');
-        if (userData) {
+        const tokenData = localStorage.getItem('authToken');
+        
+        if (userData && tokenData) {
           const parsedUser = JSON.parse(userData);
+          const tokenInfo = JSON.parse(tokenData);
+          
+          // Simulate JWT-like token verification
+          const currentTime = Date.now();
+          const tokenExpiry = tokenInfo.expiry || 0;
+          const isTokenValid = currentTime < tokenExpiry;
+          const hasAdminRole = parsedUser.role === 'admin';
+          
+          if (!isTokenValid) {
+            // Token expired
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+            showToast('Session expired. Please login again.', 'error');
+            setIsLoading(false);
+            return;
+          }
+          
+          if (!hasAdminRole) {
+            // Invalid role
+            showToast('Insufficient permissions for admin access.', 'error');
+            setIsLoading(false);
+            return;
+          }
+          
+          // Log successful admin access attempt
+          console.log('Admin access granted:', {
+            userId: parsedUser.id,
+            role: parsedUser.role,
+            timestamp: new Date().toISOString(),
+            tokenValid: isTokenValid
+          });
+          
           setUser(parsedUser);
+        } else {
+          // No authentication data
+          showToast('Authentication required for admin access.', 'warning');
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Authentication verification failed:', error);
+        showToast('Authentication verification failed. Please try again.', 'error');
+        // Clear potentially corrupted data
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Simulate authentication check delay
-    const timer = setTimeout(checkAdminAccess, 800);
+    // Simulate JWT verification delay (network request simulation)
+    const timer = setTimeout(checkAdminAccess, 1200);
 
     return () => {
       clearTimeout(timer);
       document.body.classList.remove('admin-route');
     };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {

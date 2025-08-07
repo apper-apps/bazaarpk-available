@@ -9,31 +9,44 @@ const Unauthorized = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  useEffect(() => {
-    // Simulate admin access attempt for demo purposes
-    const simulateAdminLogin = () => {
-      showToast('Try clicking "Simulate Admin Access" to test the admin dashboard', 'info');
+useEffect(() => {
+    // Enhanced security notification for demo
+    const simulateSecurityCheck = () => {
+      showToast('Security verification required. Use "Simulate Admin Access" to demonstrate JWT-like authentication.', 'info');
     };
     
-    const timer = setTimeout(simulateAdminLogin, 1000);
+    const timer = setTimeout(simulateSecurityCheck, 1200);
     return () => clearTimeout(timer);
   }, [showToast]);
 
   const handleSimulateAdmin = () => {
-    // Create mock admin user
+// Create mock admin user with simulated JWT-like token
     const adminUser = {
       id: 1,
       name: 'Administrator',
       email: 'admin@bazaarpk.com',
-      role: 'admin'
+      role: 'admin',
+      permissions: ['read', 'write', 'delete', 'admin'],
+      lastLogin: new Date().toISOString()
+    };
+    
+    // Simulate JWT token structure
+    const authToken = {
+      token: `mock.jwt.token.${Date.now()}`,
+      issued: Date.now(),
+      expiry: Date.now() + (24 * 60 * 60 * 1000), // 24 hours from now
+      role: 'admin',
+      userId: 1
     };
     
     localStorage.setItem('user', JSON.stringify(adminUser));
-    showToast('Admin access granted! Redirecting to dashboard...', 'success');
+    localStorage.setItem('authToken', JSON.stringify(authToken));
+    
+    showToast('JWT-like authentication successful! Admin access granted.', 'success');
     
     setTimeout(() => {
       navigate('/admin');
-    }, 1500);
+    }, 1800);
   };
 
   const handleSimulateRegularUser = () => {
