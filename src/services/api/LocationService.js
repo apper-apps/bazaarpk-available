@@ -190,9 +190,8 @@ class LocationService {
       moderate: `🌟 Trending in ${location.city}`,
       cool: `🍂 Perfect for ${location.city} weather`,
       cold: `❄️ Winter favorites in ${location.city}`
-    };
+};
 
     return messages[location.weather] || `🌟 Trending in ${location.city}`;
-return messages[location.weather] || `🌟 Trending in ${location.city}`;
   }
 }
