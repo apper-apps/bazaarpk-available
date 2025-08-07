@@ -1,4 +1,4 @@
-import '@/index.css';
+import '@/index.css'
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
