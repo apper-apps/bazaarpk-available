@@ -90,14 +90,15 @@ const Header = () => {
 Deals
               </Link>
               
-              {/* Admin Link - Only visible to admin users */}
+{/* Admin Link - Only visible to admin users */}
               {userRole === 'admin' && (
                 <Link
                   to="/admin"
-                  className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 admin-access-link"
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 admin-access-link flex items-center space-x-1"
                   aria-label="Access admin dashboard"
                 >
-                  Admin
+                  <ApperIcon name="Shield" className="w-4 h-4" aria-hidden="true" />
+                  <span>Admin</span>
                 </Link>
               )}
               {/* Cart Button */}
@@ -260,15 +261,15 @@ Deals
             </Link>
 
             {/* Mobile Admin Link - Only visible to admin users */}
-            {userRole === 'admin' && (
+{userRole === 'admin' && (
               <Link
                 to="/admin"
                 onClick={toggleMobileMenu}
-                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-50 focus:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 admin-access-link"
+                className="flex items-center space-x-3 p-3 rounded-lg bg-red-600 hover:bg-red-700 focus:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 admin-access-link"
                 aria-label="Access admin dashboard"
               >
-                <ApperIcon name="Shield" className="w-5 h-5 text-purple-600" aria-hidden="true" />
-                <span className="text-gray-700 font-medium">Admin Dashboard</span>
+                <ApperIcon name="Shield" className="w-5 h-5 text-white" aria-hidden="true" />
+                <span className="text-white font-medium">Admin Dashboard</span>
               </Link>
             )}
             <button 

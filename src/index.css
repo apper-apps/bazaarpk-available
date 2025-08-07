@@ -354,17 +354,46 @@ div[class*="overlay"][style*="position: fixed"] {
   }
 }
 
-/* Enhanced admin access link */
+/* Enhanced admin access link with red background and pulse animation */
 .admin-access-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #DC2626, #EF4444);
+  position: relative;
+  overflow: hidden;
 }
 
 .admin-access-link:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  animation: adminPulse 1.5s infinite;
 }
 
+.admin-access-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-access-link:hover::before {
+  left: 100%;
+}
+
+@keyframes adminPulse {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  }
+  50% { 
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+  }
+}
 /* Force higher priority for admin dashboard elements */
 .admin-dashboard * {
   z-index: inherit;
