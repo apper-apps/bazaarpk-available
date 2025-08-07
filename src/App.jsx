@@ -6,18 +6,10 @@ import ApperIcon from "@/components/ApperIcon";
 import Header from "@/components/organisms/Header";
 import CartDrawer from "@/components/organisms/CartDrawer";
 import ErrorComponent, { Error } from "@/components/ui/Error";
-import UserManagement from "@/components/pages/UserManagement";
-import AddRecipeBundle from "@/components/pages/AddRecipeBundle";
 import Home from "@/components/pages/Home";
-import AddProduct from "@/components/pages/AddProduct";
 import ProductDetail from "@/components/pages/ProductDetail";
-import OrderManagement from "@/components/pages/OrderManagement";
 import Category from "@/components/pages/Category";
-import RecipeBundlesPage from "@/components/pages/RecipeBundlesPage";
-import ManageProducts from "@/components/pages/ManageProducts";
 import Cart from "@/components/pages/Cart";
-import AdminDashboard from "@/components/pages/AdminDashboard";
-import ReportsAnalytics from "@/components/pages/ReportsAnalytics";
 // Browser detection at module level to avoid re-computation
 const detectBrowser = () => {
   const userAgent = navigator.userAgent;
@@ -56,12 +48,7 @@ const BROWSER_INFO = detectBrowser();
 function AppContent() {
   const navigate = useNavigate();
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  const [isAdminLoading, setIsAdminLoading] = useState(false);
-  const [adminLoadProgress, setAdminLoadProgress] = useState(0);
-  const [adminError, setAdminError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [showForceExit, setShowForceExit] = useState(false);
-  const [performanceMetrics, setPerformanceMetrics] = useState({});
+  const [performanceMetrics, setPerformanceMetrics] = useState(null);
 
   // Ref to track component mount status
   const isMountedRef = useRef(true);
@@ -113,404 +100,20 @@ function AppContent() {
           }
         }
       }
-    };
+};
 
-    const handleAdminMaskError = (e) => {
-      if (!isMountedRef.current) return;
-
-      // Enhanced console logging for debugging with browser context
-      console.group('🔴 Admin Mask Persistence Error');
-      console.error('Error Details:', {
-        timestamp: new Date().toISOString(),
-        errorType: e.detail?.type || 'unknown',
-        errorMessage: e.detail?.message || 'No message provided',
-        errorStack: e.detail?.error?.stack,
-        currentRoute: window.location.pathname,
-        userAgent: navigator.userAgent,
-        browserInfo: BROWSER_INFO,
-        screenInfo: {
-          width: window.screen.width,
-          height: window.screen.height,
-          availWidth: window.screen.availWidth,
-          availHeight: window.screen.availHeight,
-          devicePixelRatio: window.devicePixelRatio
-        },
-        adminState: {
-          isAdminRoute: window.location.pathname.includes('/admin'),
-          hasAdminClass: document.body.classList.contains('admin-accessing'),
-          adminElements: document.querySelectorAll('.admin-dashboard, [data-admin-content]').length
-        }
-      });
-      console.groupEnd();
-      
-      // Track mask persistence errors in analytics
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'admin_mask_persistence_error', {
-          error_type: e.detail?.type || 'unknown',
-          browser_name: BROWSER_INFO.name || 'unknown',
-          browser_version: BROWSER_INFO.version || 'unknown',
-          is_mobile: BROWSER_INFO.mobile || false,
-          route: window.location.pathname,
-          timestamp: Date.now()
-        });
-      }
-      
-      // Dispatch enhanced custom event for error tracking
-      window.dispatchEvent(new CustomEvent('admin_debug_log', {
-        detail: {
-          type: 'mask_error',
-          severity: 'high',
-          data: e.detail,
-          debugInfo: {
-            route: window.location.pathname,
-            timestamp: Date.now(),
-            retryable: e.detail?.retryable !== false,
-            browserInfo: BROWSER_INFO,
-            performanceMetrics
-          }
-        }
-      }));
-    };
-
-    // Monitor console errors
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      originalConsoleError.apply(console, args);
-      
-      // Track console errors in analytics
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'console_error', {
-          error_message: args[0]?.toString() || 'Unknown error',
-          browser_name: BROWSER_INFO.name || 'unknown',
-          route: window.location.pathname,
-          timestamp: Date.now()
-        });
-      }
-    };
-
-    // Initialize monitoring
+    // Initialize performance monitoring
     initPerformanceMonitoring();
-    window.addEventListener('admin_mask_error', handleAdminMaskError);
 
-    // Cleanup on component unmount
+    // Cleanup function
     return () => {
       isMountedRef.current = false;
-      window.removeEventListener('admin_mask_error', handleAdminMaskError);
-      console.error = originalConsoleError;
     };
-  }, []); // Empty dependency array is correct - this only runs once on mount
-
-const cleanupRef = useRef(false);
-  
-const handleAdminAccess = useCallback(async () => {
-    // Prevent multiple simultaneous calls
-    if (isAdminLoading || cleanupRef.current || !isMountedRef.current) return;
-    
-    const startTime = performance.now();
-    cleanupRef.current = false;
-    setIsAdminLoading(true);
-    setAdminLoadProgress(0);
-    setAdminError(null);
-    setShowForceExit(false);
-    
-    // Track admin access attempt
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'admin_access_attempt', {
-        browser_name: BROWSER_INFO.name || 'unknown',
-        browser_version: BROWSER_INFO.version || 'unknown',
-        is_mobile: BROWSER_INFO.mobile || false,
-        timestamp: Date.now()
-      });
-    }
-    
-    // Adaptive progress interval based on device performance
-    const intervalDelay = BROWSER_INFO.mobile ? 150 : 100;
-    const progressInterval = setInterval(() => {
-      if (cleanupRef.current || !isMountedRef.current) {
-        clearInterval(progressInterval);
-        return;
-      }
-      setAdminLoadProgress(prev => {
-        if (prev >= 90) return prev;
-        return prev + Math.random() * 15;
-      });
-    }, intervalDelay);
-
-    // Browser-specific timeout (longer for mobile/slower browsers)
-    const timeoutDuration = BROWSER_INFO.mobile || 
-                           (BROWSER_INFO.name === 'Safari' && parseInt(BROWSER_INFO.version) < 14) ? 
-                           8000 : 5000;
-    
-    const timeoutId = setTimeout(() => {
-      if (cleanupRef.current || !isMountedRef.current) return;
-      setShowForceExit(true);
-      setAdminError(`Loading timeout - Dashboard taking longer than expected (${timeoutDuration/1000}s timeout)`);
-      
-      // Track timeout events
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'admin_load_timeout', {
-          timeout_duration: timeoutDuration,
-          browser_name: BROWSER_INFO.name || 'unknown',
-          is_mobile: BROWSER_INFO.mobile || false
-        });
-      }
-    }, timeoutDuration);
-
-    try {
-      // Enhanced browser compatibility checks
-      if (!window.fetch) {
-        throw new Error('Browser does not support fetch API. Please update your browser.');
-      }
-      
-      if (!window.localStorage) {
-        throw new Error('Browser does not support localStorage. Please enable cookies and try again.');
-      }
-      
-      // Ensure no overlays are blocking navigation
-      document.body.classList.add('admin-accessing');
-      document.body.classList.add('content-layer');
-      
-      // Add accessibility attributes
-      document.body.setAttribute('aria-busy', 'true');
-      document.body.setAttribute('aria-live', 'polite');
-      
-      // Browser-optimized loading stages
-      if (!cleanupRef.current && isMountedRef.current) setAdminLoadProgress(20);
-      await new Promise(resolve => setTimeout(resolve, BROWSER_INFO.mobile ? 300 : 200));
-      
-      // Preload critical admin resources
-      if (!cleanupRef.current && isMountedRef.current) setAdminLoadProgress(40);
-      if ('requestIdleCallback' in window) {
-        await new Promise(resolve => window.requestIdleCallback(resolve));
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      if (!cleanupRef.current && isMountedRef.current) setAdminLoadProgress(60);
-      await new Promise(resolve => setTimeout(resolve, BROWSER_INFO.mobile ? 400 : 300));
-      
-      // Navigate to admin dashboard
-      if (!cleanupRef.current && isMountedRef.current) {
-        setAdminLoadProgress(80);
-        cleanupRef.current = true; // Prevent further state updates
-        navigate('/admin');
-      }
-      
-      // Complete loading with smooth transition
-      if (!cleanupRef.current && isMountedRef.current) setAdminLoadProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Calculate and log performance metrics
-      const endTime = performance.now();
-      const loadDuration = endTime - startTime;
-      
-      console.log('📊 Admin Load Performance:', {
-        duration: Math.round(loadDuration),
-        browser: BROWSER_INFO.name,
-        mobile: BROWSER_INFO.mobile,
-        timeout: timeoutDuration
-      });
-      
-      // Track successful admin load
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'admin_load_success', {
-          load_duration: Math.round(loadDuration),
-          browser_name: BROWSER_INFO.name || 'unknown',
-          is_mobile: BROWSER_INFO.mobile || false
-        });
-      }
-      
-    } catch (error) {
-      if (cleanupRef.current || !isMountedRef.current) return; // Don't process errors after cleanup
-      
-      console.error('Admin access error:', error);
-      
-      // Enhanced error categorization
-      let errorCategory = 'unknown';
-      let userFriendlyMessage = 'Failed to access admin dashboard';
-      
-      if (error.message.includes('fetch')) {
-        errorCategory = 'network';
-        userFriendlyMessage = 'Network connection issue. Please check your internet and try again.';
-      } else if (error.message.includes('localStorage') || error.message.includes('cookies')) {
-        errorCategory = 'storage';
-        userFriendlyMessage = 'Browser storage issue. Please enable cookies and refresh the page.';
-      } else if (error.message.includes('Browser does not support')) {
-        errorCategory = 'compatibility';
-        userFriendlyMessage = error.message;
-      } else if (error.name === 'TimeoutError') {
-        errorCategory = 'timeout';
-        userFriendlyMessage = 'Request timed out. The server may be busy. Please try again.';
-      }
-      
-      if (isMountedRef.current) {
-        setAdminError(userFriendlyMessage);
-      }
-      
-      // Track admin load errors
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'admin_load_error', {
-          error_category: errorCategory,
-          error_message: error.message,
-          browser_name: BROWSER_INFO.name || 'unknown',
-          is_mobile: BROWSER_INFO.mobile || false,
-          retry_count: retryCount
-        });
-      }
-      
-      // Implement simple retry logic without recursion
-      if (retryCount < 3 && errorCategory !== 'compatibility') {
-        const baseDelay = BROWSER_INFO.mobile ? 2000 : 1000;
-        const delay = Math.pow(2, retryCount) * baseDelay;
-        
-        setTimeout(() => {
-          if (!cleanupRef.current && isMountedRef.current) {
-            setRetryCount(prev => prev + 1);
-            // Don't call handleAdminAccess recursively - let user manually retry
-            setShowForceExit(true);
-          }
-        }, delay);
-      }
-      
-    } finally {
-      // Cleanup resources
-      clearInterval(progressInterval);
-      clearTimeout(timeoutId);
-      
-      setTimeout(() => {
-        if (!cleanupRef.current && isMountedRef.current) {
-          setIsAdminLoading(false);
-          setAdminLoadProgress(0);
-        }
-        document.body.classList.remove('admin-accessing');
-        document.body.classList.remove('content-layer');
-        document.body.removeAttribute('aria-busy');
-        document.body.removeAttribute('aria-live');
-      }, 500);
-    }
-  }, [isAdminLoading, navigate, retryCount]); // Removed browserInfo from dependencies since it's now static
-
-// Force exit handler for emergency situations
-// Force exit handler for emergency situations
-  const handleForceExit = useCallback(() => {
-    console.warn('🚨 Force exit triggered - Emergency admin access cleanup');
-    
-    // Set cleanup flag to prevent further operations
-    cleanupRef.current = true;
-    
-    // Track emergency exits
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'admin_force_exit', {
-        browser_name: BROWSER_INFO.name || 'unknown',
-        error_state: adminError || 'timeout',
-        timestamp: Date.now()
-      });
-    }
-    
-    // Emergency cleanup
-    if (isMountedRef.current) {
-      setIsAdminLoading(false);
-      setAdminLoadProgress(0);
-      setAdminError(null);
-      setShowForceExit(false);
-      setRetryCount(0);
-    }
-    
-    // Force remove all admin-related classes and overlays
-    document.body.classList.remove('admin-accessing', 'content-layer');
-    document.body.classList.add('admin-emergency-exit');
-    document.body.removeAttribute('aria-busy');
-    document.body.removeAttribute('aria-live');
-    
-    // Remove emergency class after cleanup
-    setTimeout(() => {
-      document.body.classList.remove('admin-emergency-exit');
-      cleanupRef.current = false; // Reset for next attempt
-    }, 1000);
-    
-    // Navigate to safe route
-    navigate('/');
-  }, [navigate, adminError]); // Removed browserInfo from dependencies
+  }, []);
 
   return (
-<div className="min-h-screen bg-background content-layer">
+    <div className="min-h-screen bg-background content-layer">
       {/* Admin Loading Progress Bar */}
-{isAdminLoading && (
-        <>
-          <div className="admin-progress-bar" role="progressbar" aria-valuenow={adminLoadProgress} aria-valuemin="0" aria-valuemax="100">
-            <div 
-              className="admin-progress-fill" 
-              style={{ width: `${adminLoadProgress}%` }}
-            />
-          </div>
-          <div className="admin-loading-overlay" role="dialog" aria-modal="true" aria-labelledby="admin-loading-title">
-            <div className="admin-loading-modal">
-              <div className="admin-loading-spinner" aria-hidden="true" />
-              <p id="admin-loading-title" className="admin-loading-text" aria-live="polite">
-                {adminLoadProgress < 20 ? 'Initializing dashboard...' : 
-                 adminLoadProgress < 40 ? 'Checking browser compatibility...' :
-                 adminLoadProgress < 60 ? 'Loading admin content...' :
-                 adminLoadProgress < 80 ? 'Securing connection...' :
-                 adminLoadProgress < 100 ? 'Finalizing access...' : 'Complete!'}
-              </p>
-              
-{/* Browser compatibility info */}
-              <div className="text-xs text-gray-500 mt-2" aria-live="polite">
-                {BROWSER_INFO.name} {BROWSER_INFO.version} {BROWSER_INFO.mobile ? '(Mobile)' : '(Desktop)'}
-              </div>
-              
-              {adminError && (
-                <div className="admin-error-message" role="alert" aria-live="assertive">
-                  <div className="flex items-start space-x-2">
-                    <ApperIcon name="AlertTriangle" className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-red-600 text-sm font-medium">{adminError}</p>
-                      {retryCount > 0 && (
-                        <p className="text-gray-500 text-xs mt-1">
-                          Retry attempt {retryCount} of 3...
-                        </p>
-                      )}
-                      
-{/* Browser-specific help */}
-                      {BROWSER_INFO.name === 'Safari' && adminError.includes('timeout') && (
-                        <p className="text-blue-600 text-xs mt-1">
-                          Safari may take longer to load. Consider using Chrome or Firefox for better performance.
-                        </p>
-                      )}
-                      
-                      {BROWSER_INFO.mobile && adminError.includes('timeout') && (
-                        <p className="text-blue-600 text-xs mt-1">
-                          Mobile connections may be slower. Please ensure you have a stable internet connection.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {showForceExit && (
-                <button
-                  onClick={handleForceExit}
-                  className="admin-force-exit-btn focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                  title="Emergency exit from loading state"
-                  aria-label="Force exit from admin loading state"
-                  tabIndex={0}
-                >
-                  <ApperIcon name="X" className="w-3 h-3 mr-1 inline" />
-                  Force Exit
-                </button>
-              )}
-              
-              {/* Accessibility instructions */}
-              <div className="sr-only" aria-live="polite">
-                Admin dashboard is loading. Progress: {adminLoadProgress}%. 
-                {adminError ? `Error occurred: ${adminError}` : ''}
-                {showForceExit ? 'Press Force Exit button if loading fails to complete.' : ''}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
         <Header />
         
 <main>
@@ -521,55 +124,7 @@ const handleAdminAccess = useCallback(async () => {
             <Route path="/category" element={<Category />} />
             <Route path="/deals" element={<Category />} />
             
-            {/* Admin Dashboard Routes */}
-<Route path="/admin" element={
-              <div className="admin-dashboard fade-in-admin">
-                <AdminDashboard />
-              </div>
-            }>
-              <Route index element={<ManageProducts />} />
-              <Route path="products" element={<ManageProducts />} />
-              <Route path="products/manage" element={<ManageProducts />} />
-              <Route path="products/add" element={<AddProduct />} />
-              <Route path="orders" element={<OrderManagement />} />
-              <Route path="customers" element={<div className="p-6">Customer Management - Coming Soon</div>} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="marketing" element={<div className="p-6">Marketing Tools - Coming Soon</div>} />
-              <Route path="reports" element={<ReportsAnalytics />} />
-              <Route path="settings" element={<div className="p-6">System Settings - Coming Soon</div>} />
-            </Route>
-            
-            {/* Legacy admin routes for backward compatibility */}
-            <Route path="/admin/add-product" element={<AddProduct />} />
-            <Route path="/admin/recipe-bundles" element={<RecipeBundlesPage />} />
-            <Route path="/admin/add-recipe-bundle" element={<AddRecipeBundle />} />
-            
-            {/* Extended Admin Routes */}
-            <Route path="/admin/users" element={
-              <div className="min-h-screen bg-gray-50">
-                <Header />
-                <main className="container mx-auto px-4 py-8">
-                  <UserManagement />
-                </main>
-              </div>
-            } />
-            <Route path="/admin/orders-management" element={
-              <div className="min-h-screen bg-gray-50">
-                <Header />
-                <main className="container mx-auto px-4 py-8">
-                  <OrderManagement />
-                </main>
-              </div>
-            } />
-            <Route path="/admin/analytics" element={
-              <div className="min-h-screen bg-gray-50">
-                <Header />
-                <main className="container mx-auto px-4 py-8">
-                  <ReportsAnalytics />
-                </main>
-              </div>
-            } />
-          </Routes>
+</Routes>
         </main>
 
         <CartDrawer 
@@ -612,35 +167,6 @@ const handleAdminAccess = useCallback(async () => {
 <div>
                 <h4 className="font-medium mb-4">System</h4>
                 <div className="space-y-2">
-                  <a
-                    href="/admin-dashboard"
-                    className="admin-access-link"
-                    data-role="admin-entry"
-                    aria-label="Access admin dashboard"
-onClick={(e) => {
-                      e.preventDefault();
-                      handleAdminAccess();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleAdminAccess();
-                      }
-                    }}
-                    aria-label="Access Admin Dashboard"
-                    tabIndex={0}
-                  >
-                    <button
-                      disabled={isAdminLoading}
-                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors disabled:opacity-50 flex items-center space-x-1"
-                      title="Administrator Access"
-                    >
-                      {isAdminLoading && (
-                        <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
-                      )}
-                      <span>Admin Access</span>
-                    </button>
-                  </a>
                 </div>
               </div>
             </div>

@@ -102,7 +102,8 @@ const RecipeBundlesPage = () => {
   // Edit bundle
   const handleEditBundle = (bundle) => {
     // For now, navigate to add page with bundle data
-    navigate(`/admin/add-recipe-bundle?edit=${bundle.Id}`);
+// Navigate to recipe bundles page (admin functionality removed)
+    navigate(`/category?filter=recipe-bundles`);
   };
 
   if (loading) {
@@ -143,7 +144,7 @@ const RecipeBundlesPage = () => {
           </div>
           
           <Button
-            onClick={() => navigate("/admin/add-recipe-bundle")}
+onClick={() => navigate("/category?filter=recipe-bundles")}
             className="flex items-center gap-2"
             size="lg"
           >
@@ -311,7 +312,7 @@ const RecipeBundlesPage = () => {
             action={
               bundles.length === 0 ? (
                 <Button
-                  onClick={() => navigate("/admin/add-recipe-bundle")}
+onClick={() => navigate("/category?filter=recipe-bundles")}
                   className="flex items-center gap-2"
                 >
                   <ApperIcon name="Plus" className="w-4 h-4" />
