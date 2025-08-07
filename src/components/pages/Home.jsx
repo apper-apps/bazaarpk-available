@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useToast } from "@/hooks/useToast";
-import { LocationService } from "@/services/api/LocationService";
+import LocationService from "@/services/api/LocationService";
 import { CategoryService } from "@/services/api/CategoryService";
 import { ProductService } from "@/services/api/ProductService";
 import { RecipeBundleService } from "@/services/api/RecipeBundleService";

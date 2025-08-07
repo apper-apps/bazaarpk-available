@@ -36,7 +36,7 @@ const simulateAdminUserFromLocation = (latitude, longitude) => {
 return null;
 };
 
-class LocationService {
+export default class LocationService {
   static async getUserLocation() {
     try {
       if (!navigator.geolocation) {
