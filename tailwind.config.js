@@ -41,27 +41,12 @@ export default {
       fontFamily: {
         display: ['Poppins', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
-      },
-boxShadow: {
+},
+      boxShadow: {
         'soft': '0 2px 4px 0 rgba(0, 0, 0, 0.05)',
         'medium': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         'large': '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
       },
-      security: {
-        verified: '#10B981',
-        pending: '#F59E0B',
-        expired: '#EF4444',
-        high: '#7C3AED',
-        medium: '#2563EB',
-        low: '#6B7280',
-      },
-      auth: {
-        authenticated: '#059669',
-        unauthenticated: '#DC2626',
-        session: '#0891B2',
-        token: '#7C2D12',
-      },
-    },
     },
   },
   plugins: [],
