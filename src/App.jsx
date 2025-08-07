@@ -10,6 +10,8 @@ import Home from "@/components/pages/Home";
 import ProductDetail from "@/components/pages/ProductDetail";
 import Category from "@/components/pages/Category";
 import Cart from "@/components/pages/Cart";
+import AdminRoute from "@/components/pages/AdminRoute";
+import Unauthorized from "@/components/pages/Unauthorized";
 // Browser detection at module level to avoid re-computation
 const detectBrowser = () => {
   const userAgent = navigator.userAgent;
@@ -117,12 +119,14 @@ function AppContent() {
         <Header />
         
 <main>
-          <Routes>
+<Routes>
             <Route path="/" element={<Home />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/category" element={<Category />} />
             <Route path="/deals" element={<Category />} />
+            <Route path="/admin" element={<AdminRoute />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
             
 </Routes>
         </main>

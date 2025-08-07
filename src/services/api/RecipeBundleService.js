@@ -1,213 +1,223 @@
-import recipeBundlesData from '@/services/mockData/recipeBundles.json';
+import recipeBundlesData from "@/services/mockData/recipeBundles.json";
 
-// Service for managing recipe bundles
+// Enhanced RecipeBundleService with admin management capabilities
 class RecipeBundleServiceClass {
   constructor() {
-    this.bundles = [...recipeBundlesData];
-    this.nextId = Math.max(...this.bundles.map(b => b.Id)) + 1;
+    this.recipeBundles = [...recipeBundlesData];
+    this.nextId = Math.max(...recipeBundlesData.map(bundle => bundle.Id)) + 1;
   }
 
-  // Get all recipe bundles
+  // Existing public methods
   getAll() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([...this.bundles]);
-      }, 100);
-    });
+    return [...this.recipeBundles];
   }
 
-  // Get recipe bundle by ID
   getById(id) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const bundle = this.bundles.find(b => b.Id === parseInt(id));
-        if (bundle) {
-          resolve({ ...bundle });
-        } else {
-          reject(new Error(`Recipe bundle with ID ${id} not found`));
-        }
-      }, 100);
-    });
+    return this.recipeBundles.find(bundle => bundle.Id === parseInt(id)) || null;
   }
 
-  // Get featured recipe bundles
   getFeatured(limit = 6) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const featured = this.bundles
-          .filter(bundle => bundle.featured)
-          .slice(0, limit);
-        resolve(featured);
-      }, 150);
-    });
+    return this.recipeBundles.filter(bundle => bundle.featured).slice(0, limit);
   }
 
-  // Get recipe bundles by category
   getByCategory(category, limit = 12) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const categoryBundles = this.bundles
-          .filter(bundle => 
-            bundle.category.toLowerCase() === category.toLowerCase()
-          )
-          .slice(0, limit);
-        resolve(categoryBundles);
-      }, 150);
-    });
+    return this.recipeBundles
+      .filter(bundle => bundle.category.toLowerCase() === category.toLowerCase())
+      .slice(0, limit);
   }
 
-  // Get recipe bundles by cooking time
   getByTime(maxTime, limit = 8) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const quickBundles = this.bundles
-          .filter(bundle => {
-            const timeInMinutes = parseInt(bundle.cookTime);
-            return timeInMinutes <= maxTime;
-          })
-          .slice(0, limit);
-        resolve(quickBundles);
-      }, 150);
-    });
+    return this.recipeBundles
+      .filter(bundle => bundle.prepTime <= maxTime)
+      .slice(0, limit);
   }
 
-  // Search recipe bundles
   search(query, limit = 10) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const searchResults = this.bundles
-          .filter(bundle =>
-            bundle.name.toLowerCase().includes(query.toLowerCase()) ||
-            bundle.description.toLowerCase().includes(query.toLowerCase()) ||
-            bundle.category.toLowerCase().includes(query.toLowerCase())
-          )
-          .slice(0, limit);
-        resolve(searchResults);
-      }, 200);
-    });
+    const lowerQuery = query.toLowerCase();
+    return this.recipeBundles
+      .filter(bundle => 
+        bundle.name.toLowerCase().includes(lowerQuery) ||
+        bundle.description.toLowerCase().includes(lowerQuery) ||
+        bundle.cuisine.toLowerCase().includes(lowerQuery)
+      )
+      .slice(0, limit);
   }
 
-// Create new recipe bundle
-  create(bundleData) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newBundle = {
-          ...bundleData,
-          Id: this.nextId++,
-          createdAt: new Date().toISOString()
-        };
-        this.bundles.push(newBundle);
-        resolve({ ...newBundle });
-      }, 200);
-    });
+  // Admin-only methods with enhanced capabilities
+  adminCreate(bundleData) {
+    if (!this.verifyAdminAccess()) {
+      throw new Error('Admin access required for bundle creation');
+    }
+
+    const newBundle = {
+      Id: this.nextId++,
+      ...bundleData,
+      components: bundleData.components || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'active'
+    };
+
+    this.recipeBundles.push(newBundle);
+    return newBundle;
   }
 
-  // Update recipe bundle
-  update(id, bundleData) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = this.bundles.findIndex(b => b.Id === parseInt(id));
-        if (index !== -1) {
-          this.bundles[index] = {
-            ...this.bundles[index],
-            ...bundleData,
-            Id: parseInt(id),
-            updatedAt: new Date().toISOString()
-          };
-          resolve({ ...this.bundles[index] });
-        } else {
-          reject(new Error(`Recipe bundle with ID ${id} not found`));
-        }
-      }, 200);
-    });
+  adminUpdate(id, bundleData) {
+    if (!this.verifyAdminAccess()) {
+      throw new Error('Admin access required for bundle updates');
+    }
+
+    const index = this.recipeBundles.findIndex(bundle => bundle.Id === parseInt(id));
+    if (index === -1) {
+      throw new Error('Bundle not found');
+    }
+
+    this.recipeBundles[index] = {
+      ...this.recipeBundles[index],
+      ...bundleData,
+      updatedAt: new Date().toISOString()
+    };
+
+    return this.recipeBundles[index];
   }
 
-  // Delete recipe bundle
-  delete(id) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = this.bundles.findIndex(b => b.Id === parseInt(id));
-        if (index !== -1) {
-          const deletedBundle = this.bundles.splice(index, 1)[0];
-          resolve(deletedBundle);
-        } else {
-          reject(new Error(`Recipe bundle with ID ${id} not found`));
-        }
-      }, 200);
-    });
+  adminDelete(id) {
+    if (!this.verifyAdminAccess()) {
+      throw new Error('Admin access required for bundle deletion');
+    }
+
+    const index = this.recipeBundles.findIndex(bundle => bundle.Id === parseInt(id));
+    if (index === -1) {
+      throw new Error('Bundle not found');
+    }
+
+    const deletedBundle = this.recipeBundles.splice(index, 1)[0];
+    return deletedBundle;
   }
 
-  // Add component to bundle
+  adminBulkStatusUpdate(bundleIds, status) {
+    if (!this.verifyAdminAccess()) {
+      throw new Error('Admin access required for bulk operations');
+    }
+
+    const updatedBundles = [];
+    bundleIds.forEach(id => {
+      const index = this.recipeBundles.findIndex(bundle => bundle.Id === parseInt(id));
+      if (index !== -1) {
+        this.recipeBundles[index].status = status;
+        this.recipeBundles[index].updatedAt = new Date().toISOString();
+        updatedBundles.push(this.recipeBundles[index]);
+      }
+    });
+
+    return updatedBundles;
+  }
+
+  adminGetAnalytics() {
+    if (!this.verifyAdminAccess()) {
+      throw new Error('Admin access required for analytics');
+    }
+
+    const analytics = {
+      totalBundles: this.recipeBundles.length,
+      activeBundles: this.recipeBundles.filter(b => b.status === 'active').length,
+      featuredBundles: this.recipeBundles.filter(b => b.featured).length,
+      averageRating: this.recipeBundles.reduce((sum, b) => sum + (b.rating || 0), 0) / this.recipeBundles.length,
+      categoryCounts: this.recipeBundles.reduce((acc, bundle) => {
+        acc[bundle.category] = (acc[bundle.category] || 0) + 1;
+        return acc;
+      }, {})
+    };
+
+    return analytics;
+  }
+
+  // Existing methods with admin verification where needed
   addComponent(bundleId, product, quantity, unit = "pc") {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const bundle = this.bundles.find(b => b.Id === parseInt(bundleId));
-        if (!bundle) {
-          reject(new Error(`Recipe bundle with ID ${bundleId} not found`));
-          return;
-        }
+    const bundle = this.getById(bundleId);
+    if (!bundle) {
+      throw new Error('Bundle not found');
+    }
 
-        const existingComponent = bundle.products.find(p => p.product.Id === product.Id);
-        if (existingComponent) {
-          reject(new Error("Product already exists in bundle"));
-          return;
-        }
+    const component = {
+      id: Date.now(),
+      product,
+      quantity,
+      unit,
+      addedAt: new Date().toISOString()
+    };
 
-        const newComponent = {
-          product: { ...product },
-          quantity,
-          unit
-        };
+    if (!bundle.components) {
+      bundle.components = [];
+    }
 
-        bundle.products.push(newComponent);
-        bundle.updatedAt = new Date().toISOString();
-        resolve({ ...bundle });
-      }, 200);
-    });
+    bundle.components.push(component);
+    bundle.updatedAt = new Date().toISOString();
+    
+    return bundle;
   }
 
-  // Remove component from bundle
   removeComponent(bundleId, productId) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const bundle = this.bundles.find(b => b.Id === parseInt(bundleId));
-        if (!bundle) {
-          reject(new Error(`Recipe bundle with ID ${bundleId} not found`));
-          return;
-        }
+    const bundle = this.getById(bundleId);
+    if (!bundle) {
+      throw new Error('Bundle not found');
+    }
 
-        bundle.products = bundle.products.filter(p => p.product.Id !== parseInt(productId));
-        bundle.updatedAt = new Date().toISOString();
-        resolve({ ...bundle });
-      }, 200);
-    });
+    if (bundle.components) {
+      bundle.components = bundle.components.filter(comp => comp.product.Id !== productId);
+      bundle.updatedAt = new Date().toISOString();
+    }
+
+    return bundle;
   }
 
-  // Update component in bundle
   updateComponent(bundleId, productId, updates) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const bundle = this.bundles.find(b => b.Id === parseInt(bundleId));
-        if (!bundle) {
-          reject(new Error(`Recipe bundle with ID ${bundleId} not found`));
-          return;
-        }
+    const bundle = this.getById(bundleId);
+    if (!bundle) {
+      throw new Error('Bundle not found');
+    }
 
-        const componentIndex = bundle.products.findIndex(p => p.product.Id === parseInt(productId));
-        if (componentIndex === -1) {
-          reject(new Error("Product not found in bundle"));
-          return;
-        }
-
-        bundle.products[componentIndex] = {
-          ...bundle.products[componentIndex],
-          ...updates
+    if (bundle.components) {
+      const componentIndex = bundle.components.findIndex(comp => comp.product.Id === productId);
+      if (componentIndex !== -1) {
+        bundle.components[componentIndex] = {
+          ...bundle.components[componentIndex],
+          ...updates,
+          updatedAt: new Date().toISOString()
         };
         bundle.updatedAt = new Date().toISOString();
-        resolve({ ...bundle });
-      }, 200);
-    });
+      }
+    }
+
+    return bundle;
+  }
+
+  verifyAdminAccess() {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        return user.role === 'admin';
+      }
+    } catch (error) {
+      console.error('Error verifying admin access:', error);
+    }
+    return false;
   }
 }
 
 export const RecipeBundleService = new RecipeBundleServiceClass();
+
+// Legacy function exports for backward compatibility
+export function getAll() { return RecipeBundleService.getAll(); }
+export function getById(id) { return RecipeBundleService.getById(id); }
+export function getFeatured(limit) { return RecipeBundleService.getFeatured(limit); }
+export function getByCategory(category, limit) { return RecipeBundleService.getByCategory(category, limit); }
+export function getByTime(maxTime, limit) { return RecipeBundleService.getByTime(maxTime, limit); }
+export function search(query, limit) { return RecipeBundleService.search(query, limit); }
+export function create(bundleData) { return RecipeBundleService.adminCreate(bundleData); }
+export function update(id, bundleData) { return RecipeBundleService.adminUpdate(id, bundleData); }
+export function deleteBundle(id) { return RecipeBundleService.adminDelete(id); }
+export function addComponent(bundleId, product, quantity, unit) { return RecipeBundleService.addComponent(bundleId, product, quantity, unit); }
+export function removeComponent(bundleId, productId) { return RecipeBundleService.removeComponent(bundleId, productId); }
+export function updateComponent(bundleId, productId, updates) { return RecipeBundleService.updateComponent(bundleId, productId, updates); }

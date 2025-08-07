@@ -12,7 +12,28 @@ import CategoryCarousel from "@/components/organisms/CategoryCarousel";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 
-const Home = () => {
+function Home() {
+  const { showToast } = useToast();
+  
+  // Check and potentially simulate admin access on home page load
+  useEffect(() => {
+    const checkAdminSimulation = () => {
+      // For demo purposes, check if we should simulate admin access
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'demo') {
+        const adminUser = {
+          id: 1,
+          name: 'Demo Administrator', 
+          email: 'demo@bazaarpk.com',
+          role: 'admin'
+        };
+        localStorage.setItem('user', JSON.stringify(adminUser));
+        showToast('Demo admin access enabled! Check the header for Admin link.', 'success');
+      }
+    };
+    
+    checkAdminSimulation();
+  }, [showToast]);
 const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [deals, setDeals] = useState([]);
@@ -23,8 +44,8 @@ const [products, setProducts] = useState([]);
   const [seasonalProducts, setSeasonalProducts] = useState([]);
   const [locationMessage, setLocationMessage] = useState("🔥 Trending Now");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const showToast = useToast();
+const [error, setError] = useState("");
+
 const loadData = async () => {
     try {
       setLoading(true);

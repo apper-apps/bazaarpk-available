@@ -11,7 +11,17 @@ const Header = () => {
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
   const totalItems = getTotalItems();
-
+  
+  // Get user role from localStorage
+  const getUserRole = () => {
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData).role : null;
+    } catch {
+      return null;
+    }
+  };
+  const userRole = getUserRole();
   const searchSuggestions = [
     "Fresh Vegetables",
     "Organic Fruits",
@@ -77,9 +87,19 @@ const Header = () => {
                 className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 aria-label="View current deals and offers"
               >
-                Deals
+Deals
               </Link>
               
+              {/* Admin Link - Only visible to admin users */}
+              {userRole === 'admin' && (
+                <Link
+                  to="/admin"
+                  className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 admin-access-link"
+                  aria-label="Access admin dashboard"
+                >
+                  Admin
+                </Link>
+              )}
               {/* Cart Button */}
               <Button
                 variant="ghost"
@@ -236,9 +256,21 @@ const Header = () => {
               aria-label="View current deals and offers"
             >
               <ApperIcon name="Percent" className="w-5 h-5 text-accent-600" aria-hidden="true" />
-              <span className="text-gray-700 font-medium">Deals</span>
+<span className="text-gray-700 font-medium">Deals</span>
             </Link>
 
+            {/* Mobile Admin Link - Only visible to admin users */}
+            {userRole === 'admin' && (
+              <Link
+                to="/admin"
+                onClick={toggleMobileMenu}
+                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-50 focus:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 admin-access-link"
+                aria-label="Access admin dashboard"
+              >
+                <ApperIcon name="Shield" className="w-5 h-5 text-purple-600" aria-hidden="true" />
+                <span className="text-gray-700 font-medium">Admin Dashboard</span>
+              </Link>
+            )}
             <button 
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-primary-50 focus:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 w-full text-left"
               aria-label="View notifications (3 new notifications)"

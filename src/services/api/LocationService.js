@@ -1,5 +1,43 @@
+import { toast } from "react-toastify";
+import React from "react";
+// Enhanced LocationService with admin user simulation
+
+// Mock admin users for demonstration
+const mockAdminUsers = [
+  {
+    id: 1,
+    name: 'System Administrator',
+    email: 'admin@bazaarpk.com',
+    role: 'admin',
+    permissions: ['read', 'write', 'delete', 'manage_users', 'system_settings']
+  },
+  {
+    id: 2,
+    name: 'Store Manager',
+    email: 'manager@bazaarpk.com', 
+    role: 'admin',
+    permissions: ['read', 'write', 'manage_products', 'view_analytics']
+  }
+];
+
+// Simulate admin access based on location or other criteria
+const simulateAdminUserFromLocation = (latitude, longitude) => {
+  // For demo purposes, certain coordinates grant admin access
+  if (latitude && longitude) {
+    const isAdminLocation = (
+      (latitude > 24.8 && latitude < 25.0 && longitude > 67.0 && longitude < 67.2) || // Karachi admin zone
+      (latitude > 31.4 && latitude < 31.6 && longitude > 74.3 && longitude < 74.4)    // Lahore admin zone
+    );
+    
+    if (isAdminLocation) {
+      return mockAdminUsers[0]; // Return admin user
+    }
+  }
+return null;
+};
+
 class LocationService {
-static async getUserLocation() {
+  static async getUserLocation() {
     try {
       if (!navigator.geolocation) {
         return { 
@@ -155,7 +193,6 @@ static async getUserLocation() {
     };
 
     return messages[location.weather] || `🌟 Trending in ${location.city}`;
+return messages[location.weather] || `🌟 Trending in ${location.city}`;
   }
 }
-
-export { LocationService };
